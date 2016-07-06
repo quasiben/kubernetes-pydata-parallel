@@ -71,6 +71,7 @@ class SparkMasterContainer(Container):
         super(SparkMasterContainer, self).__init__(*args, **kwargs)
         self.name = name
         self.image = "gcr.io/continuum-compute/spark:v1"
+        self.command = ["/tmp/start-spark-master.sh"]
         self.add_port(7077)
 
 
@@ -80,6 +81,7 @@ class SparkWorkerContainer(Container):
         super(SparkWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
         self.image = "gcr.io/continuum-compute/spark:v1"
+        self.command = ["/tmp/start-spark-worker.sh"]
 
 
 class DaskSchedulerContainer(Container):
