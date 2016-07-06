@@ -70,7 +70,7 @@ class SparkMasterContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(SparkMasterContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/spark-master:v1"
+        self.image = "gcr.io/continuum-compute/spark:v1"
         self.add_port(7077)
 
 
@@ -79,7 +79,26 @@ class SparkWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(SparkWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/spark-worker:v1"
+        self.image = "gcr.io/continuum-compute/spark:v1"
+
+
+class DaskSchedulerContainer(Container):
+
+    def __init__(self, name, *args, **kwargs):
+        super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
+        self.name = name
+        self.image = "gcr.io/continuum-compute/distributed:v1"
+        self.command = ["/tmp/start-scheduler.sh"]
+        self.add_port(9000)
+
+
+class DaskWorkerContainer(Container):
+
+    def __init__(self, name, *args, **kwargs):
+        super(DaskWorkerContainer, self).__init__(*args, **kwargs)
+        self.name = name
+        self.image = "gcr.io/continuum-compute/distributed:v1"
+        self.command = ["/tmp/start-worker.sh"]
 
 
 def random_id(n=6):
@@ -141,15 +160,20 @@ class Pod(V1Pod):
         self.spec.containers.append(container)
 
     def add_spark_containers(self):
-        spark = SparkMasterContainer(self.name + "-spark-master")
-        self.add_container(spark)
+        spark_master = SparkMasterContainer(self.name + "-spark-master")
+        self.add_container(spark_master)
         spark_worker_1 = SparkWorkerContainer(self.name + "-spark-worker-1")
         self.add_container(spark_worker_1)
         spark_worker_2 = SparkWorkerContainer(self.name + "-spark-worker-2")
         self.add_container(spark_worker_2)
 
     def add_dask_containers(self):
-        pass
+        dask_scheduler = DaskSchedulerContainer(self.name + "-dask-master")
+        self.add_container(dask_scheduler)
+        dask_worker_1 = DaskWorkerContainer(self.name + "-dask-worker-1")
+        self.add_container(dask_worker_1)
+        dask_worker_2 = DaskWorkerContainer(self.name + "-dask-worker-2")
+        self.add_container(dask_worker_2)
 
     def add_ipyparallel_containers(self):
         pass
