@@ -19,6 +19,12 @@ ENV JRE_HOME /etc/alternatives/jre_1.7.0
 # Get latest spark
 RUN conda install -c quasiben spark -y -q
 
+# Get latest distributed
+RUN conda install dask distributed -y -q
+COPY distributed_setup.sh /tmp/distributed_setup.sh
+RUN chmod +x /tmp/distributed_setup.sh
+RUN bash /tmp/distributed_setup.sh
+
 # Add script: register to proxy
 COPY register.py /tmp/register.py
 COPY startup.sh /tmp/startup.sh
