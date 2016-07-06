@@ -1,0 +1,9 @@
+name: scipy-demo 
+dependencies:
+  - python=3
+  - requests
+  - tornado
+  - pip:
+    - six
+    - certifi
+    - urllib3
