@@ -60,6 +60,7 @@ class JupyterContainer(Container):
         super(JupyterContainer, self).__init__(*args, **kwargs)
         self.name = name
         self.image = "gcr.io/continuum-compute/notebook:v1"
+        self.command = ["/tmp/startup.sh"]
         self.add_port(8080)
         self.add_env("APP_ID", name)
         self.add_env("GIT_URL", git_url)
