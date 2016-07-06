@@ -23,8 +23,9 @@ RUN chmod +x /tmp/register.py /tmp/*.sh
 
 USER anaconda
 
+ENV APP_PORT 9002
+EXPOSE 9000
 EXPOSE 9001
 EXPOSE 9002
-EXPOSE 9003
 
 CMD ["dask-scheduler"]
