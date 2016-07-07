@@ -1,5 +1,9 @@
+import time
+
+import tornado
 import tornado.web
-import tornado.ioloop
+from tornado import gen
+from tornado.ioloop import IOLoop
 
 from .. import config
 from ..pod import Pod
@@ -11,11 +15,10 @@ proxy = Proxy.from_kubernetes(kube)
 
 
 def wait_for_running_pod(kube, pod_name):
-    import time
     pod = kube.get_pod(name=pod_name)
     while pod.status.phase != "Running":
         print("Waiting for container to be running")
-        time.sleep(2)
+        yield gen.Task(IOLoop.instance().add_timeout, time.time() + 2)
         pod = kube.get_pod(name=pod_name)
     return pod
 
@@ -45,6 +48,9 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class SparkHandler(tornado.web.RequestHandler):
+
+    @tornado.web.asynchronous
+    @gen.engine
     def post(self):
         git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
 
@@ -58,9 +64,13 @@ class SparkHandler(tornado.web.RequestHandler):
         app_url = "{url}/".format(url=proxy.lookup(pod_name))
         print("JUPYTER APP URL:", app_url)
         self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
+        self.finish()
 
 
 class DaskHandler(tornado.web.RequestHandler):
+
+    @tornado.web.asynchronous
+    @gen.engine
     def post(self):
         git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
 
@@ -74,9 +84,13 @@ class DaskHandler(tornado.web.RequestHandler):
         app_url = "{url}/".format(url=proxy.lookup(pod_name))
         print("JUPYTER APP URL:", app_url)
         self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
+        self.finish()
 
 
 class IPythonParallelHandler(tornado.web.RequestHandler):
+
+    @tornado.web.asynchronous
+    @gen.engine
     def post(self):
         git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
 
@@ -90,3 +104,4 @@ class IPythonParallelHandler(tornado.web.RequestHandler):
         app_url = "{url}/".format(url=proxy.lookup(pod_name))
         print("JUPYTER APP URL:", app_url)
         self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
+        self.finish()
