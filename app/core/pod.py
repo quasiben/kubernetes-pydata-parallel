@@ -104,6 +104,25 @@ class DaskWorkerContainer(Container):
         self.command = ["/tmp/start-worker.sh"]
 
 
+class IPythonControllerContainer(Container):
+
+    def __init__(self, name, *args, **kwargs):
+        super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
+        self.name = name
+        self.image = "gcr.io/continuum-compute/ipyparallel:v1"
+        self.command = ["/tmp/start-controller.sh"]
+        self.add_port(9000)
+
+
+class IPythonWorkerContainer(Container):
+
+    def __init__(self, name, *args, **kwargs):
+        super(DaskWorkerContainer, self).__init__(*args, **kwargs)
+        self.name = name
+        self.image = "gcr.io/continuum-compute/ipyparallel:v1"
+        self.command = ["/tmp/start-worker.sh"]
+
+
 def random_id(n=6):
     """
     Random integer of size N
@@ -179,4 +198,9 @@ class Pod(V1Pod):
         self.add_container(dask_worker_2)
 
     def add_ipyparallel_containers(self):
-        pass
+        ipy_scheduler = IPythonControllerContainer(self.name + "-ipyparallel-master")
+        self.add_container(ipy_scheduler)
+        ipy_worker_1 = IPythonWorkerContainer(self.name + "-ipyparallel-worker-1")
+        self.add_container(ipy_worker_1)
+        ipy_worker_2 = IPythonWorkerContainer(self.name + "-ipyparallel-worker-2")
+        self.add_container(ipy_worker_2)
