@@ -74,3 +74,19 @@ class DaskHandler(tornado.web.RequestHandler):
         app_url = "{url}/".format(url=proxy.lookup(pod_name))
         print("JUPYTER APP URL:", app_url)
         self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
+
+
+class IPythonParallelHandler(tornado.web.RequestHandler):
+    def post(self):
+        git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
+
+        pod = Pod.from_jupyter_container(proxy, git_url)
+        pod.add_ipyparallel_containers()
+        kube.create_pod(pod)
+
+        pod_name = pod.name
+        created_pod = wait_for_running_pod(kube, pod_name)
+
+        app_url = "{url}/".format(url=proxy.lookup(pod_name))
+        print("JUPYTER APP URL:", app_url)
+        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
