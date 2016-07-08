@@ -27,3 +27,16 @@ class Kubernetes(object):
 
     def get_service(self, name, namespace="default"):
         return self.api.read_namespaced_service(name=name, namespace=namespace)
+
+    def create_namespace(self, ns):
+        self.api.create_namespaced_namespace(ns)
+
+    def delete_namespace(self, ns):
+        self.api.delete_namespaced_namespace(ns.v1delete, ns.name)
+
+    def get_namespace(self, name):
+        ns = [n for n in self.get_namespaces().items if n.metadata.name == name][0]
+        return ns
+
+    def get_namespaces(self):
+        return self.api.list_namespaced_namespace()

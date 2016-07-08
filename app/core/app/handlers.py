@@ -7,6 +7,7 @@ from tornado.ioloop import IOLoop
 
 from .. import config
 from ..pod import Pod
+from ..namespaces import NameSpace
 
 from core import Kubernetes, Proxy
 
@@ -96,6 +97,34 @@ class IPythonParallelHandler(tornado.web.RequestHandler):
 
         pod = Pod.from_jupyter_container(proxy, git_url)
         pod.add_ipyparallel_containers()
+        kube.create_pod(pod)
+
+        pod_name = pod.name
+        created_pod = wait_for_running_pod(kube, pod_name)
+
+        app_url = "{url}/".format(url=proxy.lookup(pod_name))
+        print("JUPYTER APP URL:", app_url)
+        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
+        self.finish()
+
+
+class DaskNameSpaceHandler(tornado.web.RequestHandler):
+
+    @tornado.web.asynchronous
+    @gen.engine
+    def post(self):
+        from uuid import uuid4
+        git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
+
+        name='bz-'+str(uuid4())
+        ns = NameSpace(name=name)
+        new_ns = kube.create_namespace(ns)
+        import ipdb
+        ipdb.set_trace()
+        pass
+
+        # pod = Pod.from_jupyter_container(proxy, git_url)
+        # pod.add_ipyparallel_containers()
         kube.create_pod(pod)
 
         pod_name = pod.name
