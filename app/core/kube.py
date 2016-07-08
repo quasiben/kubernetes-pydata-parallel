@@ -40,3 +40,6 @@ class Kubernetes(object):
 
     def get_namespaces(self):
         return self.api.list_namespaced_namespace()
+
+    def create_service(self, serv, ns):
+        return self.api.create_namespaced_service(serv, namespace=ns.name)

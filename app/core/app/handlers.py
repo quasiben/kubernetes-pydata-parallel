@@ -8,6 +8,7 @@ from tornado.ioloop import IOLoop
 from .. import config
 from ..pod import Pod
 from ..namespaces import NameSpace
+from ..services import Service
 
 from core import Kubernetes, Proxy
 
@@ -114,17 +115,22 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
     @gen.engine
     def post(self):
         from uuid import uuid4
-        git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
 
         name='bz-'+str(uuid4())
         ns = NameSpace(name=name)
-        new_ns = kube.create_namespace(ns)
+        kube.create_namespace(ns)
+
+        # create spark-cluster service
+        serv = Service('spark-cluster')
+        serv.add_port(7077, 7077)
+        kube.create_service(serv, ns)
+
         import ipdb
         ipdb.set_trace()
         pass
 
-        # pod = Pod.from_jupyter_container(proxy, git_url)
-        # pod.add_ipyparallel_containers()
+        pod = Pod.from_jupyter_container(proxy, '')
+        pod.add_ipyparallel_containers()
         kube.create_pod(pod)
 
         pod_name = pod.name
