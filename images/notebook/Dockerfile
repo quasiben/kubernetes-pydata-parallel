@@ -25,11 +25,16 @@ COPY distributed_setup.sh /tmp/distributed_setup.sh
 RUN chmod +x /tmp/distributed_setup.sh
 RUN bash /tmp/distributed_setup.sh
 
+# Get IPython parallel
+RUN conda install -c conda-forge ipyparallel -y -q
+
 # Add script: register to proxy
 COPY register.py /tmp/register.py
 COPY startup.sh /tmp/startup.sh
 RUN chown anaconda:anaconda /tmp/register.py /tmp/*.sh
 RUN chmod +x /tmp/register.py /tmp/*.sh
+# add IPython profile files
+COPY profile /opt/conda/.ipython/profile_default
 RUN chown anaconda:anaconda -R /opt/conda
 
 RUN mkdir /opt/app
