@@ -9,6 +9,7 @@ from .. import config
 from ..pod import Pod
 from ..namespaces import NameSpace
 from ..services import Service
+from ..replicationcontroller import ReplicationController
 
 from core import Kubernetes, Proxy
 
@@ -114,6 +115,9 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     @gen.engine
     def post(self):
+        from ..pod import SparkMasterContainer
+        from ..pod import SparkWorkerContainer
+
         from uuid import uuid4
 
         name='bz-'+str(uuid4())
@@ -125,6 +129,15 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         serv.add_port(7077, 7077)
         kube.create_service(serv, ns)
 
+        rpc = ReplicationController('spark-master-controller')
+
+        spark_master_container = SparkMasterContainer('spark-master')
+        spark_master_container.add_port(8080)
+        spark_master_container.image = 'gcr.io/continuum-compute/conda-spark-namespace:v4'
+
+        rpc.add_containers(spark_master_container)
+
+        kube.create_replication_controller(rpc, ns)
         import ipdb
         ipdb.set_trace()
         pass

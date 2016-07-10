@@ -43,3 +43,6 @@ class Kubernetes(object):
 
     def create_service(self, serv, ns):
         return self.api.create_namespaced_service(serv, namespace=ns.name)
+
+    def create_replication_controller(self, rpc, ns):
+        return self.api.create_namespaced_replication_controller(rpc, namespace=ns.name)
