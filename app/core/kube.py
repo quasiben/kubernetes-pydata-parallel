@@ -41,8 +41,19 @@ class Kubernetes(object):
     def get_namespaces(self):
         return self.api.list_namespaced_namespace()
 
-    def create_service(self, serv, ns):
-        return self.api.create_namespaced_service(serv, namespace=ns.name)
+    def create_service(self, serv, name):
+        """
 
-    def create_replication_controller(self, rpc, ns):
-        return self.api.create_namespaced_replication_controller(rpc, namespace=ns.name)
+        :param serv:
+        :param name: str
+        :return:
+        """
+        return self.api.create_namespaced_service(serv, namespace=name)
+
+    def create_replication_controller(self, rpc, name):
+        """
+        :param rpc:
+        :param name: str
+        :return:
+        """
+        return self.api.create_namespaced_replication_controller(rpc, namespace=name)

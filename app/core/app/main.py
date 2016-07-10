@@ -6,5 +6,5 @@ application = tornado.web.Application([
     (r"/newspark", SparkHandler),
     (r"/newdask", DaskHandler),
     (r"/newipyparallel", IPythonParallelHandler),
-    (r"/new_dasknamespace", DaskNameSpaceHandler),
+    (r"/new_sparknamespace", SparkNameSpaceHandler),
 ], debug=True)

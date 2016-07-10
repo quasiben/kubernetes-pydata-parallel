@@ -3,6 +3,7 @@ from .swagger_client.models.v1_replication_controller import V1ReplicationContro
 from .swagger_client.models.v1_replication_controller_spec import V1ReplicationControllerSpec
 from .swagger_client.models.v1_replication_controller_status import V1ReplicationControllerStatus
 from .swagger_client.models.v1_pod_template_spec import V1PodTemplateSpec
+from .swagger_client.models.v1_pod_spec import V1PodSpec
 
 
 class ReplicationController(V1ReplicationController):
@@ -18,12 +19,20 @@ class ReplicationController(V1ReplicationController):
         self.spec = V1ReplicationControllerSpec()
         self.spec.replicas = 1
         # self.spec.ports = []
-        self.spec.selector = {'component': name}
+
         self.spec.template = V1PodTemplateSpec()
-        self.spec.template.metadata = dict(labels=dict(component=name))
-        self.spec.template.spec = dict(containers=list())
+        self.spec.template.metadata = V1ObjectMeta()
+        self.spec.template.spec = V1PodSpec()
+        self.spec.template.spec.containers = []
 
-
+    def set_selector(self, name):
+        """
+        Set various component names
+        :param name:
+        :return:
+        """
+        self.spec.selector = {'component': name}
+        self.spec.template.metadata.labels = {'component': name}
 
     def set_replicas(self, num):
         """
@@ -37,5 +46,9 @@ class ReplicationController(V1ReplicationController):
         :param container: ContainerTemplate
         :return: None
         """
-        self.spec.template.spec['containers'].append(container)
+        self.spec.template.spec.containers.append(container)
+
+    def output_yaml(self):
+        import yaml
+        print(yaml.safe_dump(self.to_dict(), default_flow_style=False))
 
