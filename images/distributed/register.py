@@ -21,7 +21,11 @@ if APP_ID is None:
 
 
 for PORT in [APP_PORT, APP_PORT_1, APP_PORT_2, APP_PORT_3]:
-    app_id_port = "{}_{}".format(APP_ID, PORT)
+    if int(PORT) != 8080:
+        app_id_port = "{}_{}".format(APP_ID, PORT)
+    else:
+        app_id_port = APP_ID
+
     target_url = "http://{}:{}".format(POD_IP, PORT)
     body = {"target": target_url}
     url = "{register}/api/routes/{app_id}".format(register=PROXY_REGISTER, app_id=app_id_port)
