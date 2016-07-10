@@ -11,12 +11,13 @@ from .swagger_client.models.v1_resource_requirements import V1ResourceRequiremen
 
 class Container(V1Container):
 
-    def __init__(self, proxy=None, *args, **kwargs):
+    def __init__(self, proxy=None, add_pod_ip_env=True, *args, **kwargs):
         super(Container, self).__init__(*args, **kwargs)
         self.name = "{name}"
         self.ports = []
         self.env = []
-        self.add_pod_ip_env()
+        if add_pod_ip_env:
+            self.add_pod_ip_env()
 
         self.proxy = proxy
         if self.proxy:
@@ -59,7 +60,7 @@ class JupyterContainer(Container):
     def __init__(self, name, git_url, *args, **kwargs):
         super(JupyterContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/notebook:v4"
+        self.image = "gcr.io/continuum-compute/notebook:v5"
         self.command = ["/tmp/startup.sh"]
         self.add_port(8080)
         self.add_env("APP_ID", name)
