@@ -9,7 +9,7 @@ POD_IP = os.environ.get("POD_IP", None)
 APP_PORT = os.environ.get("APP_PORT", 8080)
 APP_PORT_1 = os.environ.get("APP_PORT_1", 8081)
 APP_PORT_2 = os.environ.get("APP_PORT_2", 8082)
-APP_PORT_3= os.environ.get("APP_PORT_3", 8083)
+APP_PORT_3 = os.environ.get("APP_PORT_3", 8083)
 
 if PROXY_REGISTER is None:
     print("Missing environment variable PROXY_REGISTER")
@@ -21,10 +21,10 @@ if APP_ID is None:
 
 
 for PORT in [APP_PORT, APP_PORT_1, APP_PORT_2, APP_PORT_3]:
-
+    app_id_port = "{}_{}".format(APP_ID, PORT)
     target_url = "http://{}:{}".format(POD_IP, PORT)
     body = {"target": target_url}
-    url = "{register}/api/routes/{app_id}".format(register=PROXY_REGISTER, app_id=APP_ID)
+    url = "{register}/api/routes/{app_id}".format(register=PROXY_REGISTER, app_id=app_id_port)
 
     req = requests.Request("POST", url, data=json.dumps(body))
     prepped = req.prepare()

@@ -188,10 +188,8 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         rpc_master = ReplicationController('dask-scheduler-controller')
         rpc_master.set_selector('dask-scheduler')
 
-        dask_scheduler_container = DaskSchedulerContainer('dask-scheduler', add_pod_ip_env=False)
-        dask_scheduler_container.add_port(9001)
-        dask_scheduler_container.add_port(9002)
-
+        dask_scheduler_container = DaskSchedulerContainer.from_dask_scheduler(proxy=proxy,
+                                                                              git_url='https://github.com/pydata/parallel.git')
 
         rpc_master.add_containers(dask_scheduler_container)
         kube.create_replication_controller(rpc_master, ns.name)

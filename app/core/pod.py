@@ -88,12 +88,23 @@ class SparkWorkerContainer(Container):
 
 class DaskSchedulerContainer(Container):
 
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name, git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
         self.image = "gcr.io/continuum-compute/distributed:v1"
         self.command = ["/tmp/start-scheduler.sh"]
+        self.add_port(8080)
         self.add_port(9000)
+        self.add_port(9001)
+        self.add_port(9002)
+        self.add_env("APP_ID", name)
+        self.add_env("GIT_URL", git_url)
+
+    @classmethod
+    def from_dask_scheduler(cls, proxy, git_url):
+        proxy_name = gen_available_name(prefix="dask-app", proxy=proxy)
+        container = DaskSchedulerContainer(proxy_name, git_url, proxy=proxy)
+        return container
 
 
 class DaskWorkerContainer(Container):
@@ -138,6 +149,8 @@ def gen_available_name(prefix, proxy):
     app_id = "{prefix}-{app_id}".format(prefix=prefix, app_id=random_id())
     if proxy.app_id_exists(app_id):
         return gen_available_name(prefix, proxy)
+    import ipdb
+    ipdb.set_trace()
     return app_id
 
 
