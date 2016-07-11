@@ -83,9 +83,9 @@ class AllServices(tornado.web.RequestHandler):
 
         time.sleep(2)
 
-        # create dask-worker
+        # create dask-worker/spark-worker/ipengines
         rpc_worker = ReplicationController('dask-worker-controller')
-        rpc_worker.set_replicas(2)
+        rpc_worker.set_replicas(8)
         rpc_worker.set_selector('dask-worker')
 
         dask_work_container = DaskWorkerContainer('dask-worker', add_pod_ip_env=False)
