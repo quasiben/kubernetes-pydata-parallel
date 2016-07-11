@@ -140,7 +140,7 @@ class SparkNameSpaceHandler(tornado.web.RequestHandler):
 
         # create spark-cluster service
         serv = Service('spark-master')
-        serv.add_port(7077, 7077)
+        serv.add_port(7077, 7077, 'spark-master-port')
         kube.create_service(serv, ns.name)
 
         time.sleep(2)
@@ -157,10 +157,67 @@ class SparkNameSpaceHandler(tornado.web.RequestHandler):
 
         kube.create_replication_controller(rpc_worker, ns.name)
 
-        pod = Pod.from_jupyter_container(proxy, '')
+        pod = Pod.from_jupyter_container(proxy, git_url='https://github.com/mrocklin/scipy-2016-parallel.git')
         kube.create_pod(pod, ns.name)
 
         pod_name = pod.name
+        created_pod = wait_for_running_pod(kube, pod_name)
+
+        app_url = "{url}/".format(url=proxy.lookup(pod_name))
+        print("JUPYTER APP URL:", app_url)
+        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
+        self.finish()
+
+
+class DaskNameSpaceHandler(tornado.web.RequestHandler):
+
+    @tornado.web.asynchronous
+    @gen.engine
+    def post(self):
+        from ..pod import DaskSchedulerContainer
+        from ..pod import DaskWorkerContainer
+
+        from uuid import uuid4
+
+        name='scipy-'+str(uuid4())
+        # name = "donothing"
+        ns = NameSpace(name=name)
+        kube.create_namespace(ns)
+
+        # create dask-scheduler
+        rpc_master = ReplicationController('dask-scheduler-controller')
+        rpc_master.set_selector('dask-scheduler')
+
+        dask_scheduler_container = DaskSchedulerContainer.from_dask_scheduler(proxy=proxy,
+                                                                              git_url='https://github.com/mrocklin/scipy-2016-parallel.git')
+
+        rpc_master.add_containers(dask_scheduler_container)
+        kube.create_replication_controller(rpc_master, ns.name)
+
+        time.sleep(2)
+
+        # create dask-cluster service
+        serv = Service('dask-scheduler')
+        serv.add_port(9000, 9000, 'scheduler-port')
+        serv.add_port(9001, 9001, 'http-port')
+        serv.add_port(9002, 9002, 'bokeh-port')
+
+        kube.create_service(serv, ns.name)
+
+        time.sleep(2)
+
+        # create dask-worker
+        rpc_worker = ReplicationController('dask-worker-controller')
+        rpc_worker.set_replicas(2)
+        rpc_worker.set_selector('dask-worker')
+
+        dask_work_container = DaskWorkerContainer('dask-worker', add_pod_ip_env=False)
+
+        rpc_worker.add_containers(dask_work_container)
+
+        aa = kube.create_replication_controller(rpc_worker, ns.name)
+
+        pod_name = dask_scheduler_container.name
         created_pod = wait_for_running_pod(kube, pod_name)
 
         app_url = "{url}/".format(url=proxy.lookup(pod_name))

@@ -13,8 +13,8 @@ RUN apt-get update \
     && apt-get install -y openjdk-7-jre-headless \
     && apt-get clean
 
-ENV JAVA_HOME /etc/alternatives/jre_1.7.0
-ENV JRE_HOME /etc/alternatives/jre_1.7.0
+ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
+ENV JRE_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
 
 # Get latest spark
 RUN conda install -c quasiben spark -y -q
