@@ -91,19 +91,23 @@ class DaskSchedulerContainer(Container):
     def __init__(self, name, git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/distributed:v2"
+        self.image = "gcr.io/continuum-compute/distributed:v5"
         self.command = ["/tmp/start-scheduler.sh"]
         self.add_port(8080)
         self.add_port(9000)
         self.add_port(9001)
         self.add_port(9002)
+        self.add_env("APP_PORT", "8080")
+        self.add_env("APP_PORT_1", "9000")
+        self.add_env("APP_PORT_2", "9001")
+        self.add_env("APP_PORT_3", "9002")
         self.add_env("APP_ID", name)
         self.add_env("GIT_URL", git_url)
 
     @classmethod
     def from_dask_scheduler(cls, proxy, git_url):
         proxy_name = gen_available_name(prefix="dask-app", proxy=proxy)
-        container = DaskSchedulerContainer(proxy_name, git_url, proxy=proxy)
+        container = DaskSchedulerContainer(proxy_name, git_url, proxy=proxy, add_pod_ip_env=True)
         return container
 
 
@@ -112,8 +116,9 @@ class DaskWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(DaskWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/distributed:v2"
+        self.image = "gcr.io/continuum-compute/distributed:v5"
         self.command = ["/tmp/start-worker.sh"]
+        self.add_port(10000)
 
 
 class IPythonControllerContainer(Container):

@@ -201,8 +201,7 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         serv.add_port(9000, 9000, 'scheduler-port')
         serv.add_port(9001, 9001, 'http-port')
         serv.add_port(9002, 9002, 'bokeh-port')
-        import ipdb
-        ipdb.set_trace()
+
         kube.create_service(serv, ns.name)
 
         time.sleep(2)
@@ -210,14 +209,12 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         # create dask-worker
         rpc_worker = ReplicationController('dask-worker-controller')
         rpc_worker.set_replicas(2)
-        rpc_worker.set_selector('dask-scheduler')
+        rpc_worker.set_selector('dask-worker')
 
         dask_work_container = DaskWorkerContainer('dask-worker', add_pod_ip_env=False)
 
         rpc_worker.add_containers(dask_work_container)
 
-        import ipdb
-        ipdb.set_trace()
         aa = kube.create_replication_controller(rpc_worker, ns.name)
 
         pod_name = dask_scheduler_container.name
