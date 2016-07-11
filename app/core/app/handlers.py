@@ -3,6 +3,7 @@ import time
 import tornado
 import tornado.web
 from tornado import gen
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.log import app_log
 from tornado.ioloop import IOLoop
 
@@ -48,24 +49,19 @@ class MainHandler(tornado.web.RequestHandler):
 class WaitHandler(tornado.web.RequestHandler):
     @gen.coroutine
     def get(self, app_id):
-        try:
-            yield wait_for_running_pods(kube, app_id + '-ns')
-        except TimeoutError:
-            # not done, set 202
-            self.set_status(202)
-            return
-
+        app_url = "{url}/".format(url=proxy.lookup(app_id))
+        client = AsyncHTTPClient()
         for i in range(10):
-            print(app_id, proxy.app_id_exists(app_id))
-            if not proxy.app_id_exists(app_id):
-                app_log.info("Waiting for app to show up in the proxy")
+            try:
+                resp = yield client.fetch(app_url)
+            except HTTPError as e:
+                app_log.info("Server not yet up at %s, %s", app_url, e)
                 yield gen.sleep(1)
             else:
                 break
-
-        app_url = "{url}/".format(url=proxy.lookup(app_id))
         app_log.info("JUPYTER APP URL: %s", app_url)
         self.finish(app_url)
+
 
 class AllServices(tornado.web.RequestHandler):
 
