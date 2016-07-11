@@ -51,8 +51,8 @@ class Container(V1Container):
 
     def add_default_resources(self):
         self.resources = V1ResourceRequirements()
-        self.resources.requests = {"cpu": 0.5, "memory": "1Gi"}
-        self.resources.limits = {"cpu": 0.5, "memory": "1Gi"}
+        self.resources.requests = {"cpu": 0.5, "memory": "2GBi"}
+        self.resources.limits = {"cpu": 2, "memory": "8Gi"}
 
 
 class DaskSchedulerContainer(Container):
