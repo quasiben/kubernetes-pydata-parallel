@@ -1,0 +1,16 @@
+{
+ "registration": 10000,
+ "control": 10101,
+ "hb_ping": 10102,
+ "hb_pong": 10103,
+ "interface": "tcp://0.0.0.0",
+ "iopub": 10104,
+ "key": "42961271-a0e9-4ff1-84cd-16f0cbf89a46",
+ "location": "schedulers",
+ "mux": 10105,
+ "pack": "json",
+ "signature_scheme": "hmac-sha256",
+ "ssh": "",
+ "task": 10106,
+ "unpack": "json"
+}
