@@ -6,7 +6,7 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 
 from .. import config
-from ..pod import Pod
+from ..pod import gen_available_name
 from ..namespaces import NameSpace
 from ..services import Service
 from ..replicationcontroller import ReplicationController
@@ -50,126 +50,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("templates/index.html", pods=pods, lookup_url=proxy.lookup_url)
 
 
-class SparkHandler(tornado.web.RequestHandler):
-
-    @tornado.web.asynchronous
-    @gen.engine
-    def post(self):
-        git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
-
-        pod = Pod.from_jupyter_container(proxy, git_url)
-        pod.add_spark_containers()
-        kube.create_pod(pod)
-
-        pod_name = pod.name
-        created_pod = wait_for_running_pod(kube, pod_name)
-
-        app_url = "{url}/".format(url=proxy.lookup(pod_name))
-        print("JUPYTER APP URL:", app_url)
-        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
-        self.finish()
-
-
-class DaskHandler(tornado.web.RequestHandler):
-
-    @tornado.web.asynchronous
-    @gen.engine
-    def post(self):
-        git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
-
-        pod = Pod.from_jupyter_container(proxy, git_url)
-        pod.add_dask_containers()
-        kube.create_pod(pod)
-
-        pod_name = pod.name
-        created_pod = wait_for_running_pod(kube, pod_name)
-
-        app_url = "{url}/".format(url=proxy.lookup(pod_name))
-        print("JUPYTER APP URL:", app_url)
-        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
-        self.finish()
-
-
-class IPythonParallelHandler(tornado.web.RequestHandler):
-
-    @tornado.web.asynchronous
-    @gen.engine
-    def post(self):
-        git_url = "https://github.com/quasiben/kubernetes-scipy-2016.git"
-
-        pod = Pod.from_jupyter_container(proxy, git_url)
-        pod.add_ipyparallel_containers()
-        kube.create_pod(pod)
-
-        pod_name = pod.name
-        created_pod = wait_for_running_pod(kube, pod_name)
-
-        app_url = "{url}/".format(url=proxy.lookup(pod_name))
-        print("JUPYTER APP URL:", app_url)
-        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
-        self.finish()
-
-
-class SparkNameSpaceHandler(tornado.web.RequestHandler):
-
-    @tornado.web.asynchronous
-    @gen.engine
-    def post(self):
-        from ..pod import SparkMasterContainer
-        from ..pod import SparkWorkerContainer
-
-        from uuid import uuid4
-
-        name='scipy-'+str(uuid4())
-        # name = "donothing"
-        ns = NameSpace(name=name)
-        kube.create_namespace(ns)
-
-        # create spark master
-        rpc_master = ReplicationController('spark-master-controller')
-        rpc_master.set_selector('spark-master')
-
-        spark_master_container = SparkMasterContainer('spark-master', add_pod_ip_env=False)
-        spark_master_container.add_port(8080)
-        spark_master_container.image = 'gcr.io/continuum-compute/conda-spark-namespace:v4'
-
-        rpc_master.add_containers(spark_master_container)
-        kube.create_replication_controller(rpc_master, ns.name)
-
-        time.sleep(2)
-
-        # create spark-cluster service
-        serv = Service('spark-master')
-        serv.add_port(7077, 7077, 'spark-master-port')
-        kube.create_service(serv, ns.name)
-
-        time.sleep(2)
-
-        rpc_worker = ReplicationController('spark-worker-controller')
-        rpc_worker.set_replicas(2)
-        rpc_worker.set_selector('spark-worker')
-
-        spark_worker_container = SparkWorkerContainer('spark-worker', add_pod_ip_env=False)
-        spark_worker_container.add_port(8081)
-        spark_worker_container.image = 'gcr.io/continuum-compute/conda-spark-namespace:v4'
-
-        rpc_worker.add_containers(spark_worker_container)
-
-        kube.create_replication_controller(rpc_worker, ns.name)
-
-        pod = Pod.from_jupyter_container(proxy, git_url='https://github.com/mrocklin/scipy-2016-parallel.git')
-        kube.create_pod(pod, ns.name)
-
-        pod_name = pod.name
-        created_pod = wait_for_running_pod(kube, pod_name)
-
-        app_url = "{url}/".format(url=proxy.lookup(pod_name))
-        print("JUPYTER APP URL:", app_url)
-        self.write("Jupyter notebook running at: <a href=\"{0}\">{0}</a>".format(app_url))
-        self.finish()
-
-
-class DaskNameSpaceHandler(tornado.web.RequestHandler):
+class AllServices(tornado.web.RequestHandler):
 
     @tornado.web.asynchronous
     @gen.engine
@@ -177,19 +58,19 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         from ..pod import DaskSchedulerContainer
         from ..pod import DaskWorkerContainer
 
-        from uuid import uuid4
-
-        name='scipy-'+str(uuid4())
         # name = "donothing"
-        ns = NameSpace(name=name)
+        proxy_name = gen_available_name(prefix="dask-app", proxy=proxy)
+        ns = NameSpace(name=proxy_name+'-ns')
         kube.create_namespace(ns)
 
         # create dask-scheduler
         rpc_master = ReplicationController('dask-scheduler-controller')
-        rpc_master.set_selector('dask-scheduler')
+        rpc_master.set_selector('schedulers')
 
-        dask_scheduler_container = DaskSchedulerContainer.from_dask_scheduler(proxy=proxy,
-                                                                              git_url='https://github.com/mrocklin/scipy-2016-parallel.git')
+        git_url = 'https://github.com/mrocklin/scipy-2016-parallel.git'
+        dask_scheduler_container = DaskSchedulerContainer(proxy_name, git_url,
+                                                          proxy=proxy,
+                                                          add_pod_ip_env=True)
 
         rpc_master.add_containers(dask_scheduler_container)
         kube.create_replication_controller(rpc_master, ns.name)
@@ -197,10 +78,18 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         time.sleep(2)
 
         # create dask-cluster service
-        serv = Service('dask-scheduler')
+        serv = Service('schedulers')
+        serv.add_port(7077, 7077, 'spark-master-port')
         serv.add_port(9000, 9000, 'scheduler-port')
         serv.add_port(9001, 9001, 'http-port')
         serv.add_port(9002, 9002, 'bokeh-port')
+        serv.add_port(10000, 10000, 'ip-registration')
+        serv.add_port(10101, 10101, 'ip-engines1')
+        serv.add_port(10102, 10102, 'ip-engines2')
+        serv.add_port(10103, 10103, 'ip-engines3')
+        serv.add_port(10104, 10104, 'ip-engines4')
+        serv.add_port(10105, 10105, 'ip-engines5')
+        serv.add_port(10106, 10106, 'ip-engines6')
 
         kube.create_service(serv, ns.name)
 

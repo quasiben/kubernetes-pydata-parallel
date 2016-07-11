@@ -3,9 +3,5 @@ from .handlers import *
 
 application = tornado.web.Application([
     (r"/", MainHandler),
-    (r"/newspark", SparkHandler),
-    (r"/newdask", DaskHandler),
-    (r"/newipyparallel", IPythonParallelHandler),
-    (r"/new_sparknamespace", SparkNameSpaceHandler),
-    (r"/new_dasknamespace", DaskNameSpaceHandler),
+    (r"/new_allservices", AllServices),
 ], debug=True)

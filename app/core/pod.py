@@ -55,48 +55,19 @@ class Container(V1Container):
         self.resources.limits = {"cpu": 0.5, "memory": "1Gi"}
 
 
-class JupyterContainer(Container):
-
-    def __init__(self, name, git_url, *args, **kwargs):
-        super(JupyterContainer, self).__init__(*args, **kwargs)
-        self.name = name
-        self.image = "gcr.io/continuum-compute/notebook:v5"
-        self.command = ["/tmp/startup.sh"]
-        self.add_port(8080)
-        self.add_env("APP_ID", name)
-        self.add_env("GIT_URL", git_url)
-
-
-class SparkMasterContainer(Container):
-
-    def __init__(self, name, *args, **kwargs):
-        super(SparkMasterContainer, self).__init__(*args, **kwargs)
-        self.name = name
-        self.image = "gcr.io/continuum-compute/spark:v1"
-        self.command = ["/tmp/start-spark-master.sh"]
-        self.add_port(7077)
-
-
-class SparkWorkerContainer(Container):
-
-    def __init__(self, name, *args, **kwargs):
-        super(SparkWorkerContainer, self).__init__(*args, **kwargs)
-        self.name = name
-        self.image = "gcr.io/continuum-compute/spark:v1"
-        self.command = ["/tmp/start-spark-worker.sh"]
-
-
 class DaskSchedulerContainer(Container):
 
     def __init__(self, name, git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/distributed:v5"
+        self.image = "gcr.io/continuum-compute/allservices:v4"
         self.command = ["/tmp/start-scheduler.sh"]
         self.add_port(8080)
         self.add_port(9000)
         self.add_port(9001)
         self.add_port(9002)
+        self.add_port(7077)
+        self.add_port(10000)
         self.add_env("APP_PORT", "8080")
         self.add_env("APP_PORT_1", "9000")
         self.add_env("APP_PORT_2", "9001")
@@ -116,29 +87,9 @@ class DaskWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(DaskWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/distributed:v5"
+        self.image = "gcr.io/continuum-compute/allservices:v4"
         self.command = ["/tmp/start-worker.sh"]
-        self.add_port(10000)
-
-
-class IPythonControllerContainer(Container):
-
-    def __init__(self, name, *args, **kwargs):
-        super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
-        self.name = name
-        self.image = "gcr.io/continuum-compute/ipyparallel:v1"
-        self.command = ["/tmp/start-controller.sh"]
-        self.add_port(9000)
-
-
-class IPythonWorkerContainer(Container):
-
-    def __init__(self, name, *args, **kwargs):
-        super(DaskWorkerContainer, self).__init__(*args, **kwargs)
-        self.name = name
-        self.image = "gcr.io/continuum-compute/ipyparallel:v1"
-        self.command = ["/tmp/start-worker.sh"]
-
+        self.add_port(8081)
 
 def random_id(n=6):
     """
@@ -155,69 +106,3 @@ def gen_available_name(prefix, proxy):
     if proxy.app_id_exists(app_id):
         return gen_available_name(prefix, proxy)
     return app_id
-
-
-class Pod(V1Pod):
-
-    def __init__(self, name, proxy=None, *args, **kwargs):
-        super(Pod, self).__init__(*args, **kwargs)
-        self.kind = "Pod"
-        self.api_version = "v1"
-        self.metadata = V1ObjectMeta()
-        self.metadata.name = None
-        self.metadata.labels = {}
-        self.spec = V1PodSpec()
-        self.spec.containers = []
-
-        self._name = None
-        self.name = name
-
-        self.proxy = proxy
-
-    @classmethod
-    def from_jupyter_container(cls, proxy, git_url):
-        pod_name = gen_available_name(prefix="jupyter", proxy=proxy)
-        pod = cls(pod_name, proxy=proxy)
-        container = JupyterContainer(pod_name, git_url, proxy=proxy)
-        pod.spec.containers.append(container)
-        return pod
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-        self.metadata.name = self._name
-        self.add_label("name", name)
-
-    def add_label(self, name, value):
-        self.metadata.labels.update({name: value})
-
-    def add_container(self, container):
-        self.spec.containers.append(container)
-
-    def add_spark_containers(self):
-        spark_master = SparkMasterContainer(self.name + "-spark-master")
-        self.add_container(spark_master)
-        spark_worker_1 = SparkWorkerContainer(self.name + "-spark-worker-1")
-        self.add_container(spark_worker_1)
-        spark_worker_2 = SparkWorkerContainer(self.name + "-spark-worker-2")
-        self.add_container(spark_worker_2)
-
-    def add_dask_containers(self):
-        dask_scheduler = DaskSchedulerContainer(self.name + "-dask-master")
-        self.add_container(dask_scheduler)
-        dask_worker_1 = DaskWorkerContainer(self.name + "-dask-worker-1")
-        self.add_container(dask_worker_1)
-        dask_worker_2 = DaskWorkerContainer(self.name + "-dask-worker-2")
-        self.add_container(dask_worker_2)
-
-    def add_ipyparallel_containers(self):
-        ipy_scheduler = IPythonControllerContainer(self.name + "-ipyparallel-master")
-        self.add_container(ipy_scheduler)
-        ipy_worker_1 = IPythonWorkerContainer(self.name + "-ipyparallel-worker-1")
-        self.add_container(ipy_worker_1)
-        ipy_worker_2 = IPythonWorkerContainer(self.name + "-ipyparallel-worker-2")
-        self.add_container(ipy_worker_2)
