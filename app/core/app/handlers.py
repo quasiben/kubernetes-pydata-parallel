@@ -51,7 +51,7 @@ class WaitHandler(tornado.web.RequestHandler):
     def get(self, app_id):
         app_url = "{url}/".format(url=proxy.lookup(app_id))
         client = AsyncHTTPClient()
-        for i in range(10):
+        for i in range(30):
             try:
                 resp = yield client.fetch(app_url)
             except HTTPError as e:
@@ -59,6 +59,9 @@ class WaitHandler(tornado.web.RequestHandler):
                 yield gen.sleep(1)
             else:
                 break
+        else:
+            self.set_status(202)
+        
         app_log.info("JUPYTER APP URL: %s", app_url)
         self.finish(app_url)
 

@@ -37,7 +37,7 @@ $.post({
   success: function (name) {
     console.log("Requested cluster:", name);
     function check() {
-      $.get("/wait/" + name, function (url, req) {
+      $.get("/wait/" + name, function (url, status, req) {
         if (req.status === 202) {
           console.log("Cluster not ready");
           setTimeout(check, 1000);
