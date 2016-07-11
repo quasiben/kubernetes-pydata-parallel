@@ -9,7 +9,7 @@ WORKDIR /tmp
 ENV PATH /opt/conda/bin:$PATH
 
 # Get latest distributed
-RUN conda install dask distributed -y -q
+RUN conda install dask distributed bokeh -y -q
 COPY distributed_setup.sh /tmp/distributed_setup.sh
 RUN chmod +x /tmp/distributed_setup.sh
 RUN bash /tmp/distributed_setup.sh
