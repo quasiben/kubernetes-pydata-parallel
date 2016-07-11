@@ -35,19 +35,7 @@ class MainHandler(tornado.web.RequestHandler):
                 return env_var.value
 
     def get(self):
-        # Get all containers
-        pods = kube.list_pods().items
-        pods = [c for c in pods if c.metadata.name.startswith(("jupyter",))]
-        running_app_ids = [self.get_app_id(c.spec) for c in pods]
-
-        # Clean routes for non-running apps
-        proxy_app_ids = proxy.get_app_ids()
-        for app_id in proxy_app_ids:
-            if app_id not in running_app_ids:
-                proxy.delete_route(app_id)
-        #
-
-        self.render("templates/index.html", pods=pods, lookup_url=proxy.lookup_url)
+        self.render("templates/index.html")
 
 
 class AllServices(tornado.web.RequestHandler):
