@@ -1,2 +1,2 @@
 #!/bin/bash
-dask-worker localhost:9000
+dask-worker dask-scheduler:9000

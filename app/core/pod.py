@@ -91,7 +91,7 @@ class DaskSchedulerContainer(Container):
     def __init__(self, name, git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/distributed:v1"
+        self.image = "gcr.io/continuum-compute/distributed:v2"
         self.command = ["/tmp/start-scheduler.sh"]
         self.add_port(8080)
         self.add_port(9000)
@@ -112,7 +112,7 @@ class DaskWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(DaskWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/continuum-compute/distributed:v1"
+        self.image = "gcr.io/continuum-compute/distributed:v2"
         self.command = ["/tmp/start-worker.sh"]
 
 
@@ -149,8 +149,6 @@ def gen_available_name(prefix, proxy):
     app_id = "{prefix}-{app_id}".format(prefix=prefix, app_id=random_id())
     if proxy.app_id_exists(app_id):
         return gen_available_name(prefix, proxy)
-    import ipdb
-    ipdb.set_trace()
     return app_id
 
 

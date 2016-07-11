@@ -140,7 +140,7 @@ class SparkNameSpaceHandler(tornado.web.RequestHandler):
 
         # create spark-cluster service
         serv = Service('spark-master')
-        serv.add_port(7077, 7077)
+        serv.add_port(7077, 7077, 'spark-master-port')
         kube.create_service(serv, ns.name)
 
         time.sleep(2)
@@ -184,7 +184,7 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         ns = NameSpace(name=name)
         kube.create_namespace(ns)
 
-        # create spark master
+        # create dask-scheduler
         rpc_master = ReplicationController('dask-scheduler-controller')
         rpc_master.set_selector('dask-scheduler')
 
@@ -193,33 +193,34 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
 
         rpc_master.add_containers(dask_scheduler_container)
         kube.create_replication_controller(rpc_master, ns.name)
-        import ipdb
-        ipdb.set_trace()
+
         time.sleep(2)
 
-        # create spark-cluster service
-        serv = Service('spark-master')
-        serv.add_port(7077, 7077)
+        # create dask-cluster service
+        serv = Service('dask-scheduler')
+        serv.add_port(9000, 9000, 'scheduler-port')
+        serv.add_port(9001, 9001, 'http-port')
+        serv.add_port(9002, 9002, 'bokeh-port')
+        import ipdb
+        ipdb.set_trace()
         kube.create_service(serv, ns.name)
 
         time.sleep(2)
 
-        rpc_worker = ReplicationController('spark-worker-controller')
+        # create dask-worker
+        rpc_worker = ReplicationController('dask-worker-controller')
         rpc_worker.set_replicas(2)
-        rpc_worker.set_selector('spark-worker')
+        rpc_worker.set_selector('dask-scheduler')
 
-        spark_worker_container = SparkWorkerContainer('spark-worker', add_pod_ip_env=False)
-        spark_worker_container.add_port(8081)
-        spark_worker_container.image = 'gcr.io/continuum-compute/conda-spark-namespace:v4'
+        dask_work_container = DaskWorkerContainer('dask-worker', add_pod_ip_env=False)
 
-        rpc_worker.add_containers(spark_worker_container)
+        rpc_worker.add_containers(dask_work_container)
 
-        kube.create_replication_controller(rpc_worker, ns.name)
+        import ipdb
+        ipdb.set_trace()
+        aa = kube.create_replication_controller(rpc_worker, ns.name)
 
-        pod = Pod.from_jupyter_container(proxy, '')
-        kube.create_pod(pod, ns.name)
-
-        pod_name = pod.name
+        pod_name = dask_scheduler_container.name
         created_pod = wait_for_running_pod(kube, pod_name)
 
         app_url = "{url}/".format(url=proxy.lookup(pod_name))

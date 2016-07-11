@@ -19,15 +19,17 @@ class Service(V1Service):
         self.spec.ports = []
         self.spec.selector = {'component': name}
 
-    def add_port(self, port, target_port):
+    def add_port(self, port, target_port, name='default'):
         """
         :param port: int
         :param target_port: int
+        :param name: str
         :return: None
         """
 
         port_ = V1ServicePort()
         port_.port = port
         port_.target_port = target_port
+        port_.name = name
         self.spec.ports.append(port_)
 

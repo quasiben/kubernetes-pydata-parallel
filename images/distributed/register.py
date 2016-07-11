@@ -36,7 +36,7 @@ for PORT in [APP_PORT, APP_PORT_1, APP_PORT_2, APP_PORT_3]:
     ret = session.send(prepped)
 
     if ret.status_code == 201:
-        print("Register OK")
+        print("Register OK: {}".format(url))
     else:
         print("Register failed:")
         print(ret.text)
