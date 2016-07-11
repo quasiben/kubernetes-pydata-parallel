@@ -25,6 +25,7 @@ RUN bash /tmp/distributed_setup.sh
 ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
 ENV JRE_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
 RUN conda install -c quasiben spark -y -q
+RUN curl -o /opt/conda/share/spark/jars/hadoop-aws-2.6.0.jar http://search.maven.org/remotecontent?filepath=org/apache/hadoop/hadoop-aws/2.6.0/hadoop-aws-2.6.0.jar
 
 # setup ipyparallel
 COPY profile /tmp/profile
