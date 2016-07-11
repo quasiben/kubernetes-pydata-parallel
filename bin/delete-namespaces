@@ -2,12 +2,11 @@
 set -e
 
 if [[ -z "$@" ]]; then
-    echo "specify at least one id to delete"
-    exit 1
+    names=$(kubectl get namespaces | grep dask-app | awk '{print $1}')
+else
+    for n in "$@"; do
+        names="$names dask-app-$n-ns"
+    done
 fi
-
-for n in "$@"; do
-    names="$names dask-app-$n-ns"
-done
 
 kubectl delete namespaces $names
