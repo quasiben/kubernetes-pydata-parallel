@@ -16,8 +16,12 @@ class Kubernetes(object):
 
         self.api = swagger.ApivApi(self.client)
 
-    def list_pods(self):
-        return self.api.list_pod()
+    def list_pods(self, namespace=None):
+        pods = self.api.list_pod()
+        if namespace:
+            return [ p for p in pods.items if p.metadata.namespace == namespace ]
+        else:
+            return pods.items
 
     def create_pod(self, pod, namespace="default"):
         self.api.create_namespaced_pod(pod, namespace=namespace)
