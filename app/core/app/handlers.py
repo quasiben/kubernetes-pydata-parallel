@@ -157,7 +157,7 @@ class SparkNameSpaceHandler(tornado.web.RequestHandler):
 
         kube.create_replication_controller(rpc_worker, ns.name)
 
-        pod = Pod.from_jupyter_container(proxy, '')
+        pod = Pod.from_jupyter_container(proxy, git_url='https://github.com/mrocklin/scipy-2016-parallel.git')
         kube.create_pod(pod, ns.name)
 
         pod_name = pod.name
@@ -189,7 +189,7 @@ class DaskNameSpaceHandler(tornado.web.RequestHandler):
         rpc_master.set_selector('dask-scheduler')
 
         dask_scheduler_container = DaskSchedulerContainer.from_dask_scheduler(proxy=proxy,
-                                                                              git_url='https://github.com/pydata/parallel.git')
+                                                                              git_url='https://github.com/mrocklin/scipy-2016-parallel.git')
 
         rpc_master.add_containers(dask_scheduler_container)
         kube.create_replication_controller(rpc_master, ns.name)
