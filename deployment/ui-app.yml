@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: gcr.io/continuum-compute/scipy-app:v1
+        image: gcr.io/computetesting/scipy-app:v1
         ports:
         - containerPort: 8080
         env:

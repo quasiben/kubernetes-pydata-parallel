@@ -1,4 +1,33 @@
-FROM gcr.io/continuum-compute/miniconda-base:v11
+FROM centos:7
+
+ENV LANG en_US.UTF-8
+
+RUN yum update -y \
+    && yum install -y tar git make bzip2 \
+    && yum clean all
+
+# Create anaconda group and user
+RUN groupadd anaconda
+RUN useradd -g anaconda -d /opt/continuum anaconda
+USER anaconda
+WORKDIR /opt/continuum
+
+# Conda setup
+RUN curl -s -L https://repo.continuum.io/miniconda/Miniconda3-4.0.5-Linux-x86_64.sh -o /opt/continuum/miniconda.sh \
+    && bash /opt/continuum/miniconda.sh -b -p /opt/continuum/anaconda \
+    && rm /opt/continuum/miniconda.sh \
+    && /opt/continuum/anaconda/bin/conda clean -y -a
+
+ENV PATH /opt/continuum/anaconda/bin:$PATH
+RUN conda config --set show_channel_urls True
+
+# Add script: register to proxy
+RUN mkdir /opt/continuum/scripts/
+COPY register.py /opt/continuum/scripts//register.py
+USER root
+RUN chown anaconda:anaconda /opt/continuum/scripts/register.py
+USER anaconda
+ 
 
 COPY environment.yml /opt/continuum/environment.yml
 RUN conda env create -f /opt/continuum/environment.yml
