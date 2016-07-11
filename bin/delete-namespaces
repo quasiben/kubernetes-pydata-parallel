@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+if [[ -z "$@" ]]; then
+    echo "specify at least one id to delete"
+    exit 1
+fi
+
+for n in "$@"; do
+    names="$names dask-app-$n-ns"
+done
+
+kubectl delete namespaces $names
