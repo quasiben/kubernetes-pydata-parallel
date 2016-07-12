@@ -8,7 +8,7 @@ WORKDIR /tmp
 
 # Download JAVA
 RUN apt-get update \
-    && apt-get install -y openjdk-7-jre-headless \
+    && apt-get install -y vim openjdk-7-jre-headless \
     && apt-get clean
 
 ENV PATH /opt/conda/bin:$PATH
@@ -39,15 +39,14 @@ COPY start-scheduler.sh /tmp/start-scheduler.sh
 COPY start-worker.sh /tmp/start-worker.sh
 RUN chown anaconda:anaconda /tmp/register.py /tmp/*.sh
 RUN chmod +x /tmp/register.py /tmp/*.sh
-#RUN chown anaconda:anaconda -R /opt/conda
-
 
 # setup for notebook
 RUN mkdir /opt/app
 RUN chown anaconda:anaconda -R /opt/app
+RUN chown anaconda:anaconda -R /opt/conda
 
 
-#USER anaconda
+USER anaconda
 RUN mkdir -p $(ipython locate profile) \
  && rsync -aru /tmp/profile/ $(ipython locate profile)/
 
@@ -70,8 +69,7 @@ EXPOSE 7077 \
        10106
 
 ENV AWS_SECRET_ACCESS_KEY "uI4HYzvm9x04500806NVzHJLJSnMGRqY/n3/5IoR"
-                                                                                                                                   
 ENV AWS_ACCESS_KEY_ID "AKIAJIHXCHUAFLGTMUGQ"
-
+ENV SHELL /bin/bash
 
 CMD ["dask-scheduler"]
