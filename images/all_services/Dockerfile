@@ -15,6 +15,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 # Get latest distributed
 RUN conda install joblib snakeviz ujson dask distributed bokeh -y -q
+RUN conda install -c conda-forge dask -y -q
 RUN pip install fakestockdata
 RUN conda install -c conda-forge ipyparallel -y -q
 COPY distributed_setup.sh /tmp/distributed_setup.sh
