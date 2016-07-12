@@ -25,7 +25,9 @@ RUN bash /tmp/distributed_setup.sh
 ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
 ENV JRE_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
 RUN conda install -c quasiben spark -y -q
-RUN curl -o /opt/conda/share/spark/jars/hadoop-aws-2.6.0.jar http://search.maven.org/remotecontent?filepath=org/apache/hadoop/hadoop-aws/2.6.0/hadoop-aws-2.6.0.jar
+RUN curl -o /opt/conda/share/spark/jars/hadoop-aws-2.6.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.6.0/hadoop-aws-2.6.0.jar
+RUN curl -o /opt/conda/share/spark/jars/aws-java-sdk-1.7.4.2.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4.2/aws-java-sdk-1.7.4.2.jar
+COPY spark-defaults.conf /opt/conda/share/spark/conf/spark-defaults.conf
 
 # setup ipyparallel
 COPY profile /tmp/profile
@@ -66,6 +68,10 @@ EXPOSE 7077 \
        10104 \
        10105 \
        10106
+
+ENV AWS_SECRET_ACCESS_KEY "uI4HYzvm9x04500806NVzHJLJSnMGRqY/n3/5IoR"
+                                                                                                                                   
+ENV AWS_ACCESS_KEY_ID "AKIAJIHXCHUAFLGTMUGQ"
 
 
 CMD ["dask-scheduler"]
