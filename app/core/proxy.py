@@ -12,11 +12,9 @@ class Proxy(object):
 
     @classmethod
     def from_kubernetes(cls, kubernetes):
-        # lookup_service = kubernetes.get_service("proxy-lookup")
-        # lookup_ip = lookup_service.status.load_balancer.ingress[0].ip
-        # lookup_url = "http://{}".format(lookup_ip)
-        # hardcode lookup URL for our tutorial:
-        lookup_url = "https://scipy2016-cluster.jupyter.org"
+        lookup_service = kubernetes.get_service("proxy-lookup")
+        lookup_ip = lookup_service.status.load_balancer.ingress[0].ip
+        lookup_url = "http://{}".format(lookup_ip)
         register_service = kubernetes.get_service("proxy-register")
         register_ip = register_service.status.load_balancer.ingress[0].ip
         register_url = "http://{}".format(register_ip)
