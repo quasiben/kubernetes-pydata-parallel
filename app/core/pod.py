@@ -60,7 +60,7 @@ class DaskSchedulerContainer(Container):
     def __init__(self, name, git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/computetesting/allservices:v8"
+        self.image = "gcr.io/computetesting/allservices:v15"
         self.command = ["/tmp/start-scheduler.sh"]
         self.add_port(8080)
         self.add_port(9000)
@@ -77,7 +77,7 @@ class DaskSchedulerContainer(Container):
 
     @classmethod
     def from_dask_scheduler(cls, proxy, git_url):
-        proxy_name = gen_available_name(prefix="dask-app", proxy=proxy)
+        proxy_name = gen_available_name(prefix="cluster", proxy=proxy)
         container = DaskSchedulerContainer(proxy_name, git_url, proxy=proxy, add_pod_ip_env=True)
         return container
 
@@ -87,7 +87,7 @@ class DaskWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(DaskWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/computetesting/allservices:v8"
+        self.image = "gcr.io/computetesting/allservices:v16"
         self.command = ["/tmp/start-worker.sh"]
         self.add_port(8081)
 

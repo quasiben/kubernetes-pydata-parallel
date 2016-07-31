@@ -76,28 +76,27 @@ class AllServices(tornado.web.RequestHandler):
     def post(self):
         from ..pod import DaskSchedulerContainer
 
-        # name = "donothing"
-        proxy_name = gen_available_name(prefix="dask-app", proxy=proxy)
+        proxy_name = gen_available_name(prefix="cluster", proxy=proxy)
         ns = NameSpace(name=proxy_name+'-ns')
         kube.create_namespace(ns)
 
         git_url = 'https://github.com/mrocklin/scipy-2016-parallel.git'
-        dask_scheduler_container = DaskSchedulerContainer(proxy_name, git_url,
+        scheduler_container = DaskSchedulerContainer(proxy_name, git_url,
                                                           proxy=proxy,
                                                           add_pod_ip_env=True)
 
         # create dask-scheduler
-        rpc_master = ReplicationController('dask-scheduler-controller')
+        rpc_master = ReplicationController('scheduler-controller')
         rpc_master.set_selector('schedulers')
 
-        rpc_master.add_containers(dask_scheduler_container)
+        rpc_master.add_containers(scheduler_container)
         kube.create_replication_controller(rpc_master, ns.name)
         self.set_status(202)
         self.finish(proxy_name)
-        yield self.finish_spawning(ns, dask_scheduler_container)
+        yield self.finish_spawning(ns, scheduler_container)
     
     @gen.coroutine
-    def finish_spawning(self, ns, dask_scheduler_container):
+    def finish_spawning(self, ns, scheduler_container):
         from ..pod import DaskWorkerContainer
 
         yield gen.sleep(2)
@@ -121,12 +120,12 @@ class AllServices(tornado.web.RequestHandler):
         yield gen.sleep(2)
 
         # create dask-worker/spark-worker/ipengines
-        rpc_worker = ReplicationController('dask-worker-controller')
+        rpc_worker = ReplicationController('worker-controller')
         rpc_worker.set_replicas(8)
-        rpc_worker.set_selector('dask-worker')
+        rpc_worker.set_selector('workers')
 
-        dask_work_container = DaskWorkerContainer('dask-worker', add_pod_ip_env=False)
+        work_container = DaskWorkerContainer('workers', add_pod_ip_env=False)
 
-        rpc_worker.add_containers(dask_work_container)
+        rpc_worker.add_containers(work_container)
 
         aa = kube.create_replication_controller(rpc_worker, ns.name)
