@@ -18,9 +18,6 @@ RUN conda install joblib snakeviz ujson dask distributed bokeh -y -q
 RUN conda install -c conda-forge dask -y -q
 RUN pip install fakestockdata
 RUN conda install -c conda-forge ipyparallel -y -q
-COPY distributed_setup.sh /tmp/distributed_setup.sh
-RUN chmod +x /tmp/distributed_setup.sh
-RUN bash /tmp/distributed_setup.sh
 
 # Set up spark
 ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
@@ -32,13 +29,12 @@ COPY spark-defaults.conf /opt/conda/share/spark/conf/spark-defaults.conf
 
 # setup ipyparallel
 COPY profile /tmp/profile
-RUN chown -R anaconda:anaconda /tmp/*.sh /tmp/profile
 
 # Add script: register to proxy
 COPY register.py /tmp/register.py
 COPY start-scheduler.sh /tmp/start-scheduler.sh
 COPY start-worker.sh /tmp/start-worker.sh
-RUN chown anaconda:anaconda /tmp/register.py /tmp/*.sh
+RUN chown -R anaconda:anaconda /tmp/register.py /tmp/*.sh /tmp/profile
 RUN chmod +x /tmp/register.py /tmp/*.sh
 
 # setup for notebook
