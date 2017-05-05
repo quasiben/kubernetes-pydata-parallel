@@ -14,7 +14,7 @@ class Kubernetes(object):
             self.client.default_headers["Authorization"] = auth_token
             self.client.default_headers["Content-Type"] = "application/json"
 
-        self.api = swagger.ApivApi(self.client)
+        self.api = swagger.DefaultApi(self.client)
 
     def list_pods(self, namespace=None):
         pods = self.api.list_pod()
@@ -33,7 +33,7 @@ class Kubernetes(object):
         return self.api.read_namespaced_service(name=name, namespace=namespace)
 
     def create_namespace(self, ns):
-        self.api.create_namespaced_namespace(ns)
+        self.api.create_namespace(ns)
 
     def delete_namespace(self, ns):
         self.api.delete_namespaced_namespace(ns.v1delete, ns.name)

@@ -2,6 +2,7 @@ import json
 
 import requests
 
+from .config import LOCAL
 
 class Proxy(object):
 
@@ -16,9 +17,12 @@ class Proxy(object):
         # lookup_ip = lookup_service.status.load_balancer.ingress[0].ip
         # lookup_url = "http://{}".format(lookup_ip)
         # hardcode lookup URL for our tutorial:
-        lookup_url = "https://cluster.bigfatintegral.net"
+        lookup_url = "http://192.168.1.3:30080"
         register_service = kubernetes.get_service("proxy-register")
-        register_ip = register_service.status.load_balancer.ingress[0].ip
+        if LOCAL:
+            register_ip = "192.168.1.3:30081"
+        else:
+            register_ip = register_service.status.load_balancer.ingress[0].ip
         register_url = "http://{}".format(register_ip)
         return cls(lookup_url=lookup_url, register_url=register_url)
 

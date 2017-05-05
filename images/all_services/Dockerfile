@@ -1,5 +1,5 @@
 FROM continuumio/anaconda3
-MAINTAINER Ben Zaitlen "ben.zaitlen@continuum.io"
+MAINTAINER Ben Zaitlen "quasiben@gmail.com"
 
 # Create anaconda group and user
 RUN groupadd anaconda
@@ -15,7 +15,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 # Get latest distributed
 RUN conda install joblib snakeviz ujson dask distributed bokeh -y -q
-RUN conda install -c conda-forge dask -y -q
+RUN conda install -c conda-forge dask distributed -y -q
 RUN pip install fakestockdata
 RUN conda install -c conda-forge ipyparallel -y -q
 
@@ -39,11 +39,11 @@ RUN chmod +x /tmp/register.py /tmp/*.sh
 
 # setup for notebook
 RUN mkdir /opt/app
-RUN chown anaconda:anaconda -R /opt/app
-RUN chown anaconda:anaconda -R /opt/conda
+#RUN chown anaconda:anaconda -R /opt/app
+#RUN chown anaconda:anaconda -R /opt/conda
 
 
-USER anaconda
+#USER anaconda
 RUN mkdir -p $(ipython locate profile) \
  && rsync -aru /tmp/profile/ $(ipython locate profile)/
 
