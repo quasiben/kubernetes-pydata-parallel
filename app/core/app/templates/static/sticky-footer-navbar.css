@@ -34,6 +34,11 @@ body > .container {
   padding-left: 15px;
 }
 
+.large {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20px;
+}
+
 code {
   font-size: 80%;
 }

@@ -8,10 +8,10 @@ EXPOSE 80
 EXPOSE 81
 EXPOSE 443
 
-#COPY ssl-cert.pem /tmp/ssl-cert.pem
-#COPY ssl-key.pem /tmp/ssl-key.pem
+COPY pycon-parallel-cert.pem /tmp/ssl-cert.pem
+COPY pycon-parallel-key.pem /tmp/ssl-key.pem
 COPY startup.sh /usr/bin/startup.sh
 RUN chmod +x /usr/bin/startup.sh
 CMD /usr/bin/startup.sh
-#COPY server.js /tmp/server.js
+COPY server.js /tmp/server.js
 #CMD node /tmp/server.js

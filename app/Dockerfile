@@ -3,9 +3,12 @@ FROM centos:7
 ENV LANG en_US.UTF-8
 
 RUN yum update -y \
-    && yum install -y tar git make bzip2 \
+    && yum install -y tar git make bzip2 epel-release \
+    && yum install -y nginx \
     && yum clean all
 
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
+ 
 # Create anaconda group and user
 RUN groupadd anaconda
 RUN useradd -g anaconda -d /opt/continuum anaconda
@@ -39,8 +42,14 @@ COPY core /opt/continuum/app/core
 COPY start.py /opt/continuum/app/start.py
 USER root
 RUN chmod +x /opt/continuum/app/start.py
-USER anaconda
+
+COPY pycon-parallel-cert.pem /tmp/ssl-cert.pem 
+COPY pycon-parallel-key.pem /tmp/ssl-key.pem
 
 EXPOSE 8080
+EXPOSE 8081
 
+RUN /usr/sbin/nginx
+
+user anaconda
 CMD ["python", "/opt/continuum/app/start.py"]

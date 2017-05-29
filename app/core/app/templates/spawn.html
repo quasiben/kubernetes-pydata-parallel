@@ -42,6 +42,15 @@ $.post({
           console.log("Cluster not ready");
           setTimeout(check, 1000);
         } else {
+          $('#message').html(
+            $('<p>')
+              .text('Your cluster is ready. If you are not redirected automatically, click ')
+              .append(
+                $('<a>')
+                  .attr('href', url)
+                  .text('here')
+              )
+          )
           window.location = url;
         }
       });

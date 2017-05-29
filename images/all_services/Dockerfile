@@ -1,4 +1,4 @@
-FROM continuumio/anaconda3
+FROM continuumio/miniconda3:4.1.11
 MAINTAINER Ben Zaitlen "quasiben@gmail.com"
 
 # Create anaconda group and user
@@ -8,24 +8,21 @@ WORKDIR /tmp
 
 # Download JAVA
 RUN apt-get update \
-    && apt-get install -y vim openjdk-7-jre-headless \
+    && apt-get install -y vim openjdk-7-jre-headless graphviz\
     && apt-get clean
 
 ENV PATH /opt/conda/bin:$PATH
 
-# Get latest distributed
-RUN conda install joblib snakeviz ujson dask distributed bokeh -y -q
-RUN conda install -c conda-forge dask distributed -y -q
-RUN pip install fakestockdata
-RUN conda install -c conda-forge ipyparallel -y -q
+# Install Base Anaconda 3.5
+RUN conda install anaconda python=3.5 -y -q
 
-# Set up spark
-ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
-ENV JRE_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
-RUN conda install -c quasiben spark -y -q
-RUN curl -o /opt/conda/share/spark/jars/hadoop-aws-2.6.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.6.0/hadoop-aws-2.6.0.jar
-RUN curl -o /opt/conda/share/spark/jars/aws-java-sdk-1.7.4.2.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4.2/aws-java-sdk-1.7.4.2.jar
-COPY spark-defaults.conf /opt/conda/share/spark/conf/spark-defaults.conf
+# Get latest notebook
+RUN conda install notebook 
+
+# Get base distributed/bokeh
+RUN conda install joblib snakeviz ujson dask distributed bokeh pandas-datareader -y -q
+RUN conda install -c conda-forge dask distributed -y -q
+RUN pip install fakestockdata graphviz
 
 # setup ipyparallel
 COPY profile /tmp/profile
@@ -37,15 +34,43 @@ COPY start-worker.sh /tmp/start-worker.sh
 RUN chown -R anaconda:anaconda /tmp/register.py /tmp/*.sh /tmp/profile
 RUN chmod +x /tmp/register.py /tmp/*.sh
 
+# Get github distributed 
+RUN conda remove distributed --force -y -q
+RUN git clone https://github.com/dask/distributed.git
+RUN cd distributed; python setup.py install
+
+# Get github bokeh
+RUN conda remove bokeh --force -y -q
+RUN conda install -c bokeh nodejs -y -q
+RUN git clone https://github.com/bokeh/bokeh.git
+RUN cd bokeh/bokehjs; npm install
+RUN cd bokeh; python setup.py install --build-js
+COPY app_index.html /opt/conda/lib/python3.5/site-packages/bokeh-0.12.6.dev6+1.g693c6ab-py3.5.egg/bokeh/server/views/app_index.html
+
+# Set up spark
+ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
+ENV JRE_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
+RUN conda install -c conda-forge py4j=0.10.4 -y -q
+RUN conda install -c quasiben pyspark=2.1.1 -y 
+RUN curl -o /opt/conda/lib/python3.5/site-packages/pyspark/jars/hadoop-aws-2.7.3.jar  https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar
+RUN curl -o /opt/conda/lib/python3.5/site-packages/pyspark/jars/aws-java-sdk-1.7.4.2.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4.2/aws-java-sdk-1.7.4.2.jar
+COPY spark-defaults.conf /opt/conda/share/spark/conf/spark-defaults.conf
+ENV SPARK_CONF_DIR /opt/conda/share/spark/conf
+ENV SPARK_HOME /opt/conda/lib/python3.5/site-packages/pyspark
+RUN cp -r /opt/conda/sbin $SPARK_HOME
+RUN mkdir -p $SPARK_HOME/launcher/target/scala-2.11
+
+
 # setup for notebook
 RUN mkdir /opt/app
-#RUN chown anaconda:anaconda -R /opt/app
-#RUN chown anaconda:anaconda -R /opt/conda
 
+# setup prep
+RUN git clone https://github.com/pydata/parallel-tutorial.git /opt/app
+RUN cd /opt/app && python prep.py
 
-#USER anaconda
-RUN mkdir -p $(ipython locate profile) \
- && rsync -aru /tmp/profile/ $(ipython locate profile)/
+RUN chown anaconda:anaconda -R /opt/app
+RUN chown anaconda:anaconda -R /opt/conda
+
 
 EXPOSE 7077 \
        8080 \
@@ -65,8 +90,8 @@ EXPOSE 7077 \
        10105 \
        10106
 
-ENV AWS_SECRET_ACCESS_KEY "uI4HYzvm9x04500806NVzHJLJSnMGRqY/n3/5IoR"
-ENV AWS_ACCESS_KEY_ID "AKIAJIHXCHUAFLGTMUGQ"
+USER anaconda
+
 ENV SHELL /bin/bash
 
 CMD ["dask-scheduler"]

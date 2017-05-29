@@ -11,7 +11,6 @@
     <link rel="icon" href="../../favicon.ico">
 
     <title>PyData Parallel Tutorial</title>
-
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://bootswatch.com/cosmo/bootstrap.min.css">
 
@@ -33,25 +32,22 @@
 
   <body>
 
-    <!-- Fixed navbar -->
-    <!--<nav class="navbar navbar-default navbar-fixed-top">-->
-    <!--</nav>-->
 
-    <!-- Begin page content -->
     <div class="container">
-      <div class="page-header"> </div>
+      <div class="page-header"></div>
+      <p class="large">
+        Welcome!  Clicking the button below will launch an isolated 9 node cluster.  The cluster will launch with <a href="distributed.readthedocs.io">Dask Distributed</a>
+        and <a href="spark.apache.org">Spark</a> workers running and waiting to be used.  A <a href="http://jupyter.org/">Jupyter Notebook</a> will also be created
+        and populated with tutorial materials.
+      </p>
+      <div class="page-header"></div>
+      <br/>
      <a href="/new_allservices">
             <button type="submit" class="btn" style="width: 100%; height: 150px; background-color: #2780e3; border-color: #2780e3; font-size: 25px; color: #FFF">Launch a Parallel PyData Cluster</button>
       </a>
-
-
-    <h2>Setup</h2>
-      <ul>
-        <li>Notebook https://cluster.bigfatintegral.org/cluster-XXXX/tree</li>
-        <li>Distributed Status: https://cluster.bigfatintegral.org/cluster-xxxxxx_9002/status</li>
-        <li>Distributed Tasks: https://cluster.bigfatintegral.org/cluster-xxxxxx_9002/tasks</li>
-      </ul>
     </div>
+
+
 
     <footer class="footer">
       <div class="container">

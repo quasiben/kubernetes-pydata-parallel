@@ -22,7 +22,7 @@ if APP_ID is None:
 
 for PORT in [APP_PORT, APP_PORT_1, APP_PORT_2, APP_PORT_3]:
     if int(PORT) != 8080:
-        app_id_port = "{}_{}".format(APP_ID, PORT)
+        app_id_port = "{}/{}".format(APP_ID, PORT)
     else:
         app_id_port = APP_ID
 

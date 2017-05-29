@@ -51,7 +51,7 @@ class WaitHandler(tornado.web.RequestHandler):
     def get(self, app_id):
         app_url = "{url}/".format(url=proxy.lookup(app_id))
         client = AsyncHTTPClient()
-        for i in range(30):
+        for i in range(10):
             try:
                 resp = yield client.fetch(app_url)
             except HTTPError as e:
@@ -121,7 +121,7 @@ class AllServices(tornado.web.RequestHandler):
 
         # create dask-worker/spark-worker/ipengines
         rpc_worker = ReplicationController('worker-controller')
-        rpc_worker.set_replicas(3)
+        rpc_worker.set_replicas(4)
         rpc_worker.set_selector('workers')
 
         work_container = DaskWorkerContainer('workers', add_pod_ip_env=False)

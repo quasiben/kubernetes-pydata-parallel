@@ -60,7 +60,7 @@ class DaskSchedulerContainer(Container):
     def __init__(self, name, git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "allservices:v1"
+        self.image = "gcr.io/computetesting/allservices:v17"
         self.command = ["/tmp/start-scheduler.sh"]
         self.add_port(8080)
         self.add_port(9000)
@@ -87,7 +87,7 @@ class DaskWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(DaskWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "allservices:v1"
+        self.image = "gcr.io/computetesting/allservices:v17"
         self.command = ["/tmp/start-worker.sh"]
         self.add_port(8081)
 

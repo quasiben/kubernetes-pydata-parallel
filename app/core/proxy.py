@@ -17,7 +17,7 @@ class Proxy(object):
         # lookup_ip = lookup_service.status.load_balancer.ingress[0].ip
         # lookup_url = "http://{}".format(lookup_ip)
         # hardcode lookup URL for our tutorial:
-        lookup_url = "http://192.168.1.3:30080"
+        lookup_url = "https://pycon-parallel-cluster.jovyan.org"
         register_service = kubernetes.get_service("proxy-register")
         if LOCAL:
             register_ip = "192.168.1.3:30081"
