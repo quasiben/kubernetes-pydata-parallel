@@ -80,10 +80,12 @@ class AllServices(tornado.web.RequestHandler):
         ns = NameSpace(name=proxy_name+'-ns')
         kube.create_namespace(ns)
 
-        git_url = 'https://github.com/mrocklin/scipy-2016-parallel.git'
-        scheduler_container = DaskSchedulerContainer(proxy_name, git_url,
-                                                          proxy=proxy,
-                                                          add_pod_ip_env=True)
+        parallel_git_url = 'https://github.com/pydata/parallel-tutorial.git'
+        dask_git_url = 'https://github.com/dask/dask-tutorial.git'
+        scheduler_container = DaskSchedulerContainer(proxy_name, parallel_git_url,
+                                                     dask_git_url,
+                                                     proxy=proxy,
+                                                     add_pod_ip_env=True)
 
         # create dask-scheduler
         rpc_master = ReplicationController('scheduler-controller')
@@ -121,7 +123,7 @@ class AllServices(tornado.web.RequestHandler):
 
         # create dask-worker/spark-worker/ipengines
         rpc_worker = ReplicationController('worker-controller')
-        rpc_worker.set_replicas(4)
+        rpc_worker.set_replicas(2)
         rpc_worker.set_selector('workers')
 
         work_container = DaskWorkerContainer('workers', add_pod_ip_env=False)

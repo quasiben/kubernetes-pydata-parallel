@@ -57,7 +57,7 @@ class Container(V1Container):
 
 class DaskSchedulerContainer(Container):
 
-    def __init__(self, name, git_url='', *args, **kwargs):
+    def __init__(self, name, parallel_git_url='',  dask_git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
         self.image = "gcr.io/computetesting/allservices:v17"
@@ -73,12 +73,13 @@ class DaskSchedulerContainer(Container):
         self.add_env("APP_PORT_2", "9001")
         self.add_env("APP_PORT_3", "9002")
         self.add_env("APP_ID", name)
-        self.add_env("GIT_URL", git_url)
+        self.add_env("PARALLEL_GIT_URL", parallel_git_url)
+        self.add_env("DASK_GIT_URL", dask_git_url)
 
     @classmethod
-    def from_dask_scheduler(cls, proxy, git_url):
+    def from_dask_scheduler(cls, proxy, parallel_git_url, dask_git_url):
         proxy_name = gen_available_name(prefix="cluster", proxy=proxy)
-        container = DaskSchedulerContainer(proxy_name, git_url, proxy=proxy, add_pod_ip_env=True)
+        container = DaskSchedulerContainer(proxy_name, parallel_git_url, dask_git_url, proxy=proxy, add_pod_ip_env=True)
         return container
 
 

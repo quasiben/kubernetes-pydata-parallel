@@ -62,11 +62,16 @@ RUN mkdir -p $SPARK_HOME/launcher/target/scala-2.11
 
 
 # setup for notebook
-RUN mkdir /opt/app
+RUN mkdir -p /opt/app/parallel-tutorial
+RUN mkdir -p /opt/app/dask-tutorial
 
-# setup prep
-RUN git clone https://github.com/pydata/parallel-tutorial.git /opt/app
-RUN cd /opt/app && python prep.py
+# setup prep for pydata-parallel
+RUN git clone https://github.com/pydata/parallel-tutorial.git /opt/app/parallel-tutorial
+RUN cd /opt/app/pydata-parallel && python prep.py
+
+# setup prep dask-tutorial
+RUN git clone https://github.com/dask/dask-tutorial.git /opt/app/dask-tutorial
+RUN cd /opt/app/pydata-parallel && git checkout scipy-2017
 
 RUN chown anaconda:anaconda -R /opt/app
 RUN chown anaconda:anaconda -R /opt/conda
