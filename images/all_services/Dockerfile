@@ -21,7 +21,7 @@ RUN conda install notebook
 
 # Get base distributed/bokeh
 RUN conda install joblib snakeviz ujson dask distributed bokeh pandas-datareader -y -q
-RUN conda install -c conda-forge dask distributed -y -q
+RUN conda install -c conda-forge dask distributed s3fs -y -q
 RUN pip install fakestockdata graphviz
 
 # setup ipyparallel
@@ -45,7 +45,7 @@ RUN conda install -c bokeh nodejs -y -q
 RUN git clone https://github.com/bokeh/bokeh.git
 RUN cd bokeh/bokehjs; npm install
 RUN cd bokeh; python setup.py install --build-js
-COPY app_index.html /opt/conda/lib/python3.5/site-packages/bokeh-0.12.6.dev6+1.g693c6ab-py3.5.egg/bokeh/server/views/app_index.html
+COPY app_index.html /opt/conda/lib/python3.5/site-packages/bokeh-0.12.7.dev10+9.g90b941d-py3.5.egg/bokeh/server/views/app_index.html
 
 # Set up spark
 ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64/jre
@@ -91,6 +91,9 @@ EXPOSE 7077 \
        10106
 
 USER anaconda
+
+RUN git clone https://github.com/jcrist/dask-tutorial-pydata-seattle-2017 /tmp/ask-tutorial-pydata-seattle-2017
+RUN cp -r /tmp/ask-tutorial-pydata-seattle-2017/* /opt/app/
 
 ENV SHELL /bin/bash
 
