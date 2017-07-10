@@ -51,8 +51,8 @@ class Container(V1Container):
 
     def add_default_resources(self):
         self.resources = V1ResourceRequirements()
-        self.resources.requests = {"cpu": 0.5, "memory": "2Gi"}
-        self.resources.limits = {"cpu": 2.0, "memory": "8Gi"}
+        self.resources.requests = {"cpu": 0.5, "memory": "7.5Gi"}
+        self.resources.limits = {"cpu": 2.0, "memory": "7.5Gi"}
 
 
 class DaskSchedulerContainer(Container):
@@ -60,7 +60,7 @@ class DaskSchedulerContainer(Container):
     def __init__(self, name, parallel_git_url='',  dask_git_url='', *args, **kwargs):
         super(DaskSchedulerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/computetesting/allservices:v17"
+        self.image = "gcr.io/computetesting/allservices:v1"
         self.command = ["/tmp/start-scheduler.sh"]
         self.add_port(8080)
         self.add_port(9000)
@@ -88,7 +88,7 @@ class DaskWorkerContainer(Container):
     def __init__(self, name, *args, **kwargs):
         super(DaskWorkerContainer, self).__init__(*args, **kwargs)
         self.name = name
-        self.image = "gcr.io/computetesting/allservices:v17"
+        self.image = "gcr.io/computetesting/allservices:v1"
         self.command = ["/tmp/start-worker.sh"]
         self.add_port(8081)
 
